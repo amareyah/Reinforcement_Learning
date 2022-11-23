@@ -16,6 +16,7 @@ class Bandit:
         self.total_reward = 0
         self.estimated_action_values = np.zeros((self.number_of_actions,))
         self.true_action_values = rng.normal(size=(self.number_of_actions,))
+        self.action_frequencies = np.zeros((self.number_of_actions,))
         self.optimal_action = self.get_optimal_action()
         self.optimal_actions_selected = []
         self.rewards = []
@@ -34,12 +35,11 @@ class Bandit:
             action_idx = rng.integers(self.number_of_actions)
         return action_idx
 
-    @staticmethod
-    def get_step_size(step: int) -> float:
-        return 1 / step
+    def get_step_size(self, action) -> float:
+        return 1 / self.action_frequencies[action]
 
     def update_action_value_estimate(self, action: int, reward: float, step: int) -> None:
-        alpha = self.get_step_size(step)
+        alpha = self.get_step_size(action)
         q_old = self.estimated_action_values[action]
         q_new = q_old + alpha * (reward - q_old)
         self.estimated_action_values[action] = q_new
@@ -49,6 +49,7 @@ class Bandit:
         for step in range(1, total_steps + 1):
             action = self.take_action()
             reward = self.get_reward(action)
+            self.action_frequencies[action] += 1
             self.update_action_value_estimate(action, reward, step)
             self.rewards.append(reward)
             self.optimal_actions_selected.append(self.is_optimal_action(action))
