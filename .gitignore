@@ -1,3 +1,6 @@
 mon/**/*.*
 recordings/**/*.*
 runs/**/*.*
+.ipynb_checkpoints/**
+.vscode/**
+**/__pycache__/**
