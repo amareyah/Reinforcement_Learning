@@ -28,13 +28,13 @@ class BanditBase:
             action = rng.integers(self.number_of_actions)
         self.action_frequencies[action] += 1
         return action
-    
-    def change_true_action_values(self):
-        raise NotImplementedError
 
     def get_reward(self, action: int) -> float:
         """For given action calculates reward"""
         return rng.normal(loc=self.true_action_values[action], scale=self.reward_deviation)
+
+    def change_true_action_values(self, time_step: int, action: int):
+        raise NotImplementedError
 
     def get_step_size(self, action: int) -> float:
         """For given action returns step size."""
@@ -62,22 +62,22 @@ class BanditBase:
     def run(self, total_steps: int) -> None:
         """Runs action value estimation loop"""
         self.initialize_state()
-        step = 0
-        while step < total_steps:
+        time_step = 0
+        while time_step < total_steps:
             action = self.take_action()
             reward = self.get_reward(action)
             self.update_action_value_estimate(action, reward)
             self.rewards.append(reward)
             self.optimal_actions_selected.append(self.is_optimal_action(action))
-            self.change_true_action_values()
-            step += 1
+            self.change_true_action_values(time_step, action)
+            time_step += 1
 
 
 class BanditStationarySampleAverageStep(BanditBase):
     def __init__(self, number_of_actions: int, reward_deviation: float, eps: float) -> None:
         super().__init__(number_of_actions, reward_deviation, eps)
 
-    def change_true_action_values(self):
+    def change_true_action_values(self, time_step: int, action: int):
         """True action values do not change over time"""
         pass
 
@@ -87,12 +87,14 @@ class BanditStationarySampleAverageStep(BanditBase):
 
 
 class BanditNonStationarySampleAverageStep(BanditBase):
-    def __init__(self, number_of_actions: int, reward_deviation: float, eps: float) -> None:
+    def __init__(self, number_of_actions: int, reward_deviation: float, eps: float, action_values_change_steps:int) -> None:
         super().__init__(number_of_actions, reward_deviation, eps)
+        self.action_values_change_steps = action_values_change_steps
 
-    def change_true_action_values(self):
+    def change_true_action_values(self, time_step: int, action: int):
         """True action values change by some random walk"""
-        self.true_action_values = self.true_action_values + rng.normal(size=(self.number_of_actions,))
+        if time_step % self.action_values_change_steps == 0:
+            self.true_action_values = self.true_action_values + rng.normal(size=(self.number_of_actions,))
 
     def get_step_size(self, action: int) -> float:
         """For given action returns step size."""
@@ -100,13 +102,16 @@ class BanditNonStationarySampleAverageStep(BanditBase):
 
 
 class BanditNonStationaryConstantStep(BanditBase):
-    def __init__(self, number_of_actions: int, reward_deviation: float, eps: float, step_size:float) -> None:
+    def __init__(self, number_of_actions: int, reward_deviation: float, eps: float, step_size: float, action_values_change_steps:int) -> None:
         self.step_size = step_size
         super().__init__(number_of_actions, reward_deviation, eps)
+        self.action_values_change_steps = action_values_change_steps
 
-    def change_true_action_values(self):
+    def change_true_action_values(self, time_step: int, action: int):
         """True action values change by some random walk"""
-        self.true_action_values = self.true_action_values + rng.normal(size=(self.number_of_actions,))
+        if time_step % self.action_values_change_steps == 0:
+            self.true_action_values = self.true_action_values + rng.normal(size=(self.number_of_actions,))
+
 
     def get_step_size(self, action: int) -> float:
         """For given action returns step size."""
