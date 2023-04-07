@@ -87,7 +87,7 @@ class BanditStationarySampleAverageStep(BanditBase):
 
 
 class BanditNonStationarySampleAverageStep(BanditBase):
-    def __init__(self, number_of_actions: int, reward_deviation: float, eps: float, action_values_change_steps:int) -> None:
+    def __init__(self, number_of_actions: int, reward_deviation: float, eps: float, action_values_change_steps: int) -> None:
         super().__init__(number_of_actions, reward_deviation, eps)
         self.action_values_change_steps = action_values_change_steps
 
@@ -102,7 +102,9 @@ class BanditNonStationarySampleAverageStep(BanditBase):
 
 
 class BanditNonStationaryConstantStep(BanditBase):
-    def __init__(self, number_of_actions: int, reward_deviation: float, eps: float, step_size: float, action_values_change_steps:int) -> None:
+    def __init__(
+        self, number_of_actions: int, reward_deviation: float, eps: float, step_size: float, action_values_change_steps: int
+    ) -> None:
         self.step_size = step_size
         super().__init__(number_of_actions, reward_deviation, eps)
         self.action_values_change_steps = action_values_change_steps
@@ -111,7 +113,6 @@ class BanditNonStationaryConstantStep(BanditBase):
         """True action values change by some random walk"""
         if time_step % self.action_values_change_steps == 0:
             self.true_action_values = self.true_action_values + rng.normal(size=(self.number_of_actions,))
-
 
     def get_step_size(self, action: int) -> float:
         """For given action returns step size."""
