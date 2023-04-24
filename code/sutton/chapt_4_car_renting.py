@@ -19,12 +19,12 @@ class Environment:
         self.max_storage = (20, 20)
         self.max_requests = (20, 20)
         self.max_returns = (20, 20)
-        self.max_free_storage = 10  # 30
+        self.max_free_storage = 10
         self.max_car_moves = 5
 
         self.unit_rent_reward = 10
         self.unit_move_reward = -2
-        self.storage_lot_reward = -4  # -0
+        self.storage_lot_reward = -4
 
         self.miu_request = (3, 4)
         self.miu_return = (3, 2)
@@ -88,8 +88,9 @@ class Environment:
             moving_reward = unit_move_reward * (action - 1)
         else:
             moving_reward = unit_move_reward * np.abs(action)
-        # moving_reward = unit_move_reward * np.abs(action)
         storage_reward = np.sum([storage_lot_reward for ca_at_loc in cars_available if ca_at_loc > max_free_storage])
+        # storage_reward = 0
+        # moving_reward = unit_move_reward * np.abs(action)
         r = (
             (np.minimum(cars_available[0], request_grids[0]) + np.minimum(cars_available[1], request_grids[1])) * unit_rent_reward
             + moving_reward
